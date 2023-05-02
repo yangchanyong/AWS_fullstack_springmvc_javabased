@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chanyongyang.mapper.BoardMapper">
+
+	<sql id="search">
+	<trim prefix="AND (" suffix=")" prefixOverrides="or">
+		<foreach collection="typeArr" item="t">
+			<trim prefix="or">
+				<choose>
+					<when test="t == 'T'.toString()">
+						title like CONCAT(CONCAT('%',#{keyword}),'%')
+					</when>
+					<when test="t == 'C'.toString()">
+						content like CONCAT(CONCAT('%',#{keyword}),'%')
+					</when>
+					<when test="t == 'W'.toString()">
+						writer like CONCAT(CONCAT('%',#{keyword}),'%')
+					</when>
+				</choose>
+			</trim>
+		</foreach>
+	</trim>
+	</sql>
+	
+	<!-- id는 메서드명과 동일해야한다. -->
+	<select id="getList" resultType="board">
+	select * from tbl_board where bno > 0
+	</select>
+	<!-- paging처리 구문 추가  -->
+	<select id="getListWithPaging" resultType="board">
+		SELECT * 
+		FROM tbl_board tb 
+		WHERE bno > 0 
+	<include refid="search" />
+		order by bno desc
+		limit #{amount} offset #{offset} 
+		
+	</select>
+	
+	<!-- insert는 주로 resultType이 생략된다. -->
+	<insert id="insert">
+		insert into tbl_board (bno, title, content, writer) values (#{title}, #{content}, #{writer}) 
+	</insert>
+	
+	<insert id="insertSelectKey">
+		<selectKey keyProperty="bno" order="BEFORE" resultType="long">
+		select nextval(seq_board) from dual
+		</selectKey>
+		insert into tbl_board (bno, title, content, writer) values (#{bno}, #{title}, #{content}, #{writer}) 
+	</insert>
+	
+	<!-- resultType은 별칭이다. -->
+	<select id="read" resultMap="boardMap">
+		select * from tbl_board LEFT JOIN TBL_ATTACH ta USING (bno) where bno = #{bno} order by odr
+	</select>
+	
+	<resultMap type="board" id="boardMap">
+		<result property="bno" column="bno"/>
+		<result property="title" column="title"/>
+		<result property="content" column="content"/>
+		<result property="writer" column="writer"/>
+		<result property="regDate" column="regDate"/>
+		<result property="updatedate" column="updatedate"/>
+		<collection property="attachs" resultMap="attachMap" />
+	</resultMap>
+	
+	<resultMap type="attach" id="attachMap">
+		<result property="uuid" column="uuid"/>
+		<result property="path" column="path"/>
+		<result property="name" column="name"/>
+		<result property="image" column="image"/>
+		<result property="bno" column="bno"/>
+	</resultMap>
+	
+	<delete id="delete">
+		delete from tbl_board where bno = #{bno}
+	</delete>
+	
+	<update id="update">
+		update tbl_board set 
+		title = #{title}
+		, content = #{content}
+		, writer = #{writer}
+		<!-- , updatedate = now() -->
+		, updatedate = now()
+		where bno = #{bno}
+	</update>
+	
+	<select id="getTotalCnt" resultType="int">
+		SELECT count(*) 
+		FROM tbl_board 
+		WHERE bno > 0
+		<include refid="search" />
+	</select>
+	
+	<update id="updateReplyCnt">
+		update tbl_board set replycnt = replycnt + #{amount} where bno = #{bno}
+	</update>
+	
+</mapper>	

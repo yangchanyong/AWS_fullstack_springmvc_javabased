@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chanyongyang.mapper.ReplyMapper">
+	<insert id="insert">
+		<!-- keyProperty는 vo내에 있는 멤버 변수명에 바인딩 하겠다는 뜻 -->
+		<selectKey order="BEFORE" keyProperty="rno" resultType="long">
+			select nextval(seq_reply) from dual
+		</selectKey>
+		insert into tbl_reply(rno, bno, reply, replyer)
+		values(#{rno}, #{bno}, #{reply}, #{replyer})
+	</insert>
+	
+	<select id="read" resultType="reply">
+		select * from tbl_reply where rno = #{rno}
+	</select>
+	
+	<delete id="delete">
+		delete from tbl_reply where rno = #{rno}
+	</delete>
+
+	<delete id="deleteByBno">
+		delete from tbl_reply where bno = #{bno}
+	</delete>
+	
+	<update id="update">
+		update tbl_reply set
+		reply = #{reply}
+		,updatedate = now()
+		where rno = #{rno}
+	</update>
+	
+	<select id="getList" resultType="reply">
+		SELECT * FROM tbl_reply WHERE bno = #{bno} and rno > #{rno} order by rno limit 5  
+	</select>
+</mapper>	

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "https://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.chanyongyang.mapper.AttachMapper">
+
+	<insert id="insert">
+		insert into tbl_attach values(#{uuid}, #{path}, #{name}, #{image}, #{bno}, #{odr})
+	</insert>
+	
+	<delete id="delete">
+		delete from tbl_attach where uuid = #{uuid}
+	</delete>
+	
+	<select id="findBy" resultType="attach">
+		select * from tbl_attach where bno = #{bno} order by odr
+	</select>
+	
+	<delete id="deleteAll">
+		delete from tbl_attach where bno = #{bno}
+	</delete>
+	
+	<select id="getOldFiles" resultType="attach">
+		select * from tbl_attach where path = to_char(date_sub(now(), interval 1 day), 'yyyy/mm/dd')
+	</select>
+</mapper>	
